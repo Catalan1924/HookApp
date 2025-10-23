@@ -70,3 +70,16 @@ button:focus-visible {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #16213E;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #FF3E6E;
+  border-radius: 10px;
+  border: 2px solid #16213E;
+}
