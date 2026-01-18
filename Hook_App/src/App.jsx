@@ -4,11 +4,13 @@ import OnboardingForm from './components/OnboardingForm';
 import PaymentModal from './components/PaymentModal';
 import NavBar from './components/NavBar';
 import ProfileCard from './components/ProfileCard';
+import Chat from './components/Chat';
 import { UserProvider, UserContext } from './contexts/UserContext';
 
 function MainApp() {
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const [showPayment, setShowPayment] = useState(false);
+  const [currentView, setCurrentView] = useState('home'); // 'home', 'chat', 'matches', 'profile'
 
   // For demo, dummy matches
   const [matches, setMatches] = useState([
@@ -17,14 +19,16 @@ function MainApp() {
       name: 'Amina',
       age: 26,
       bio: 'Loves hiking and coffee.',
-      photos: ['https://randomuser.me/api/portraits/women/68.jpg']
+      photos: ['https://randomuser.me/api/portraits/women/68.jpg'],
+      isPrivate: false // for demo, assume public
     },
     {
       id: '2',
       name: 'James',
       age: 29,
       bio: 'Tech geek and foodie.',
-      photos: ['https://randomuser.me/api/portraits/men/45.jpg']
+      photos: ['https://randomuser.me/api/portraits/men/45.jpg'],
+      isPrivate: true // for demo, assume private
     }
   ]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -33,14 +37,15 @@ function MainApp() {
     return <LandingPage onGetStarted={() => setShowPayment(false)} />;
   }
 
-  if (user && !user.isPaid) {
-    return (
-      <>
-        <OnboardingForm onComplete={() => setShowPayment(true)} />
-        {showPayment && <PaymentModal />}
-      </>
-    );
-  }
+  // Temporarily commented out registration process
+  // if (user && !user.isPaid) {
+  //   return (
+  //     <>
+  //       <OnboardingForm onComplete={() => setShowPayment(true)} />
+  //       {showPayment && <PaymentModal />}
+  //     </>
+  //   );
+  // }
 
   // User is paid, show main app
   const currentMatch = matches[currentIndex];
