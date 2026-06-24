@@ -6,13 +6,13 @@ import NavBar from './components/Navbar';
 import ProfileCard from './components/ProfileCard';
 import Chat from './components/Chat';
 import { UserProvider, UserContext } from './contexts/UserContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
 function HomePage() {
   const { user, setUser } = useContext(UserContext);
   const [showPayment, setShowPayment] = useState(false);
 
-  // For demo, dummy matches
   const [matches, setMatches] = useState([
     {
       id: '1',
@@ -113,14 +113,35 @@ function LikesPage() {
 
 function ProfilePage() {
   const { user } = useContext(UserContext);
+  const { signOut } = useAuth();
   if (!user) return <div className="p-6">Not signed in</div>;
   const profile = user.profile || { name: user.name || 'You', age: '', bio: user.bio || 'Your profile', photos: [user.avatar || 'https://via.placeholder.com/400'] };
   return (
     <div className="p-6">
       <h2 className="text-2xl font-semibold mb-4">Profile</h2>
       <ProfileCard profile={profile} />
+      <button onClick={signOut} className="mt-4 bg-red-500 text-white px-4 py-2 rounded">Sign Out</button>
     </div>
   );
+}
+
+function AuthGate({ children }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1A1A2E] to-[#16213E]">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // If not authenticated, show landing page
+  if (!user) {
+    return <LandingPage onGetStarted={() => {}} />;
+  }
+
+  return children;
 }
 
 function MainAppRouter() {
@@ -132,7 +153,6 @@ function MainAppRouter() {
 
   return (
     <div className="flex flex-col h-screen">
-      
       <div className="flex-1 overflow-auto">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -149,8 +169,12 @@ function MainAppRouter() {
 
 export default function App() {
   return (
-    <UserProvider>
-      <MainAppRouter />
-    </UserProvider>
+    <AuthProvider>
+      <UserProvider>
+        <AuthGate>
+          <MainAppRouter />
+        </AuthGate>
+      </UserProvider>
+    </AuthProvider>
   );
 }
