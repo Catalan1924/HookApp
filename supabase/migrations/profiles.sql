@@ -13,3 +13,5 @@ create table profiles (
     is_banned boolean default false,
     created_at timestamptz default now()
 );
+
+alter table profiles enable row level security;

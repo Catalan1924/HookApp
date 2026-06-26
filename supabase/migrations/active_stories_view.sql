@@ -1,5 +1,5 @@
 -- Only return stories that haven't expired yet
-create or replace view active_stories as
+create or replace view active_stories_view as
 select
 s.id,
 s.user_id,

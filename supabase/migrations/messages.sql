@@ -6,3 +6,5 @@ create table messages (
     created_at timestamptz default now(),
     read_at timestamptz
 );
+
+alter table messages enable row level security;

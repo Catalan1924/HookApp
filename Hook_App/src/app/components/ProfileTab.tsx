@@ -55,6 +55,7 @@ export function ProfileTab({ savedFromSurprise = [], onViewProfile, onSendMessag
               alt={MY_PROFILE.name}
               className="w-24 h-24 rounded-3xl object-cover shadow-2xl"
               style={{ border: "3px solid rgba(255,255,255,0.5)" }}
+              loading="lazy"
             />
             <button className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg">
               <Camera size={14} style={{ color: "#8B1A2E" }} />
@@ -133,7 +134,7 @@ export function ProfileTab({ savedFromSurprise = [], onViewProfile, onSendMessag
                 transition={{ delay: i * 0.05 }}
                 className="aspect-square rounded-2xl overflow-hidden bg-gray-100"
               >
-                <img src={src} alt={`Liked post ${i + 1}`} className="w-full h-full object-cover" />
+                <img src={src} alt={`Liked post ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
               </motion.div>
             ))}
           </div>
@@ -152,7 +153,7 @@ export function ProfileTab({ savedFromSurprise = [], onViewProfile, onSendMessag
             ) : (
               savedFromSurprise.map((name, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: "#f4f0f1" }}>
-                  <img src="https://images.unsplash.com/photo-1578866161340-b6c1b0070ac2?w=80&h=80&fit=crop&auto=format" alt={name} className="w-12 h-12 rounded-full object-cover" />
+                  <img src="https://images.unsplash.com/photo-1578866161340-b6c1b0070ac2?w=80&h=80&fit=crop&auto=format" alt={name} className="w-12 h-12 rounded-full object-cover" loading="lazy" />
                   <div className="flex-1">
                     <p className="font-black text-foreground" style={{ fontFamily: "Nunito, sans-serif" }}>{name}</p>
                     <p className="text-xs text-muted-foreground">Saved from Surprise Meetup</p>
@@ -187,7 +188,7 @@ export function ProfileTab({ savedFromSurprise = [], onViewProfile, onSendMessag
               className="flex-shrink-0 flex flex-col items-center gap-2 p-3 rounded-2xl w-24"
               style={{ background: "white", border: "1.5px solid rgba(139,26,46,0.1)" }}
             >
-              <img src={rec.avatar} alt={rec.name} className="w-14 h-14 rounded-2xl object-cover" />
+              <img src={rec.avatar} alt={rec.name} className="w-14 h-14 rounded-2xl object-cover" loading="lazy" />
               <span className="text-xs font-black text-foreground" style={{ fontFamily: "Nunito, sans-serif" }}>{rec.name}</span>
               <span className="text-[10px] text-muted-foreground">{rec.uni}</span>
             </motion.button>

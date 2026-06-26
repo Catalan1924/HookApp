@@ -5,3 +5,5 @@ create table events (
     metadata jsonb,
     created_at timestamptz default now()
 );
+
+alter table events enable row level security;

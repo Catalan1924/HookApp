@@ -131,7 +131,7 @@ export function UserProfile({ userId, onBack, onSendMessage, onOpenChat, onBlock
       {/* Hero image with overlay */}
       <div className="relative h-80 bg-gray-200">
         {heroImage ? (
-          <img src={heroImage} alt={name} className="w-full h-full object-cover" />
+          <img src={heroImage} alt={name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white font-bold text-5xl" style={{ background: 'linear-gradient(160deg,#6A1B2A,#B5294A,#E86A8F)' }}>
             {name.charAt(0)}
@@ -139,7 +139,7 @@ export function UserProfile({ userId, onBack, onSendMessage, onOpenChat, onBlock
         )}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.15) 70%, transparent)' }} />
 
-        <button onClick={onBack} className="absolute top-5 left-4 bg-black/40 backdrop-blur-md rounded-full p-2.5 text-white">
+        <button onClick={onBack} className="absolute top-5 left-4 bg-black/40 backdrop-blur-md rounded-full p-2.5 text-white" aria-label="Go back">
           <ArrowLeft size={18} />
         </button>
 
@@ -157,7 +157,7 @@ export function UserProfile({ userId, onBack, onSendMessage, onOpenChat, onBlock
               </div>
             </div>
             {avatar && (
-              <img src={avatar} alt={name} className="w-16 h-16 rounded-2xl object-cover shadow-xl" style={{ border: '2px solid rgba(255,255,255,0.6)' }} />
+              <img src={avatar} alt={name} className="w-16 h-16 rounded-2xl object-cover shadow-xl" style={{ border: '2px solid rgba(255,255,255,0.6)' }} loading="lazy" />
             )}
           </div>
         </div>
@@ -195,7 +195,7 @@ export function UserProfile({ userId, onBack, onSendMessage, onOpenChat, onBlock
             <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-2.5">More Photos</p>
             <div className="grid grid-cols-2 gap-2">
               {photos.slice(1).map((src, i) => (
-                <img key={i} src={src} alt={`${name} photo`} className="w-full h-44 object-cover rounded-2xl" />
+                <img key={i} src={src} alt={`${name} photo`} className="w-full h-44 object-cover rounded-2xl" loading="lazy" />
               ))}
             </div>
           </div>

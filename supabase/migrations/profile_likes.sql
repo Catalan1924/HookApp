@@ -8,3 +8,5 @@ create table profile_likes (
     constraint no_self_profile_like
     check (liker_id <> liked_id)
 );
+
+alter table profile_likes enable row level security;

@@ -103,6 +103,7 @@ export function MatchesTab({ onOpenChat, onViewProfile }: MatchesTabProps) {
                     alt={match.full_name || ''}
                     className="w-16 h-16 rounded-full object-cover"
                     style={{ border: '3px solid rgba(255,255,255,0.5)' }}
+                    loading="lazy"
                   />
                 ) : (
                   <div
@@ -160,6 +161,7 @@ export function MatchesTab({ onOpenChat, onViewProfile }: MatchesTabProps) {
                     src={match.avatar_url}
                     alt={match.full_name || ''}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-white font-bold text-3xl" style={{ background: 'linear-gradient(135deg,#8B1A2E,#C0395A)' }}>

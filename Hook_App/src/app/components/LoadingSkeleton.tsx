@@ -69,3 +69,18 @@ export function LoadingSkeleton({ type = 'card', count = 3 }: LoadingSkeletonPro
     </div>
   )
 }
+
+export function LoadingSpinner({ text }: { text?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-12">
+      <div
+        className="w-8 h-8 rounded-full animate-pulse"
+        style={{ background: 'linear-gradient(135deg,#8B1A2E,#C0395A)' }}
+        aria-label={text || 'Loading'}
+      />
+      {text && (
+        <p className="text-sm font-semibold text-muted-foreground">{text}</p>
+      )}
+    </div>
+  )
+}

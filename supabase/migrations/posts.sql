@@ -14,3 +14,5 @@ create table posts (
         or length(caption) <= 100
     )
 );
+
+alter table posts enable row level security;

@@ -12,6 +12,7 @@ interface Profile {
   gender: string | null
   interests: string[] | null
   university_id: string | null
+  phone: string | null
 }
 
 interface AuthState {
@@ -21,8 +22,12 @@ interface AuthState {
   loading: boolean
   signUp: (email: string, password: string) => Promise<{ error?: string }>
   signIn: (email: string, password: string) => Promise<{ error?: string }>
+  signInWithPhone: (phone: string) => Promise<{ error?: string }>
+  verifyPhoneOTP: (phone: string, token: string) => Promise<{ error?: string }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
+  fetchUniversities: () => Promise<{ id: string; name: string; email_domain: string }[]>
+  uploadAvatar: (file: File) => Promise<string | null>
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined)
@@ -73,6 +78,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {}
   }
 
+  const signInWithPhone = async (phone: string) => {
+    const { error } = await supabase.auth.signInWithOtp({ phone })
+    if (error) return { error: error.message }
+    return {}
+  }
+
+  const verifyPhoneOTP = async (phone: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
+    if (error) return { error: error.message }
+    return {}
+  }
+
   const signOut = async () => {
     await supabase.auth.signOut()
     setProfile(null)
@@ -82,8 +99,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await fetchProfile(user.id)
   }
 
+  const fetchUniversities = async () => {
+    const { data } = await supabase.from('universities').select('*').order('name')
+    return (data || []) as { id: string; name: string; email_domain: string }[]
+  }
+
+  const uploadAvatar = async (file: File): Promise<string | null> => {
+    if (!user) return null
+    const ext = file.name.split('.').pop() || 'jpg'
+    const path = `${user.id}/avatar.${ext}`
+    const { error } = await supabase.storage
+      .from('profile-pictures')
+      .upload(path, file, { upsert: true })
+    if (error) {
+      console.error('Upload error:', error.message)
+      return null
+    }
+    const { data: urlData } = supabase.storage.from('profile-pictures').getPublicUrl(path)
+    const publicUrl = urlData?.publicUrl
+    if (publicUrl) {
+      await supabase.from('profiles').update({ avatar_url: publicUrl } as any).eq('id', user.id)
+      await refreshProfile()
+    }
+    return publicUrl || null
+  }
+
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{
+      user, session, profile, loading,
+      signUp, signIn, signInWithPhone, verifyPhoneOTP,
+      signOut, refreshProfile, fetchUniversities, uploadAvatar,
+    }}>
       {children}
     </AuthContext.Provider>
   )

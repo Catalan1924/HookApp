@@ -6,3 +6,5 @@ create table notifications (
     read_at timestamptz,
     created_at timestamptz default now()
 );
+
+alter table notifications enable row level security;

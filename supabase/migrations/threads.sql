@@ -13,3 +13,5 @@ create table threads (
 
     unique (user_a, user_b)
 );
+
+alter table threads enable row level security;

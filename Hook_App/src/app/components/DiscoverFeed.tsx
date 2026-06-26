@@ -1,7 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Heart, MoreVertical, ChevronLeft, ChevronRight, Shield, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { useAuth } from "../../contexts/AuthContext";
+import { getPosts, likePost, unlikePost, type Post } from "../../lib/api/posts";
 
+// ── Mock fallback data ──
 const STORIES = [
   { name: "You", avatar: "https://images.unsplash.com/photo-1578866161340-b6c1b0070ac2?w=64&h=64&fit=crop&auto=format", isMe: true },
   { name: "Amara", avatar: "https://images.unsplash.com/photo-1770283553838-769c5f97d55c?w=64&h=64&fit=crop&auto=format", active: true },
@@ -11,79 +14,90 @@ const STORIES = [
   { name: "Nia", avatar: "https://images.unsplash.com/photo-1578866161340-b6c1b0070ac2?w=64&h=64&fit=crop&auto=format", active: false },
 ];
 
-const POSTS = [
+const MOCK_POSTS: Post[] = [
   {
     id: "1",
-    user: { name: "Amara", uni: "UoN", avatar: "https://images.unsplash.com/photo-1770283553838-769c5f97d55c?w=64&h=64&fit=crop&auto=format" },
+    user_id: "amara",
+    user_name: "Amara",
+    user_uni: "UoN",
+    user_avatar: "https://images.unsplash.com/photo-1770283553838-769c5f97d55c?w=64&h=64&fit=crop&auto=format",
     media: [
       "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=390&h=500&fit=crop&auto=format",
       "https://images.unsplash.com/photo-1565490129165-bd6a24996c25?w=390&h=500&fit=crop&auto=format",
     ],
-    type: "gallery",
     caption: "Finals week but we stay smiling 😊",
     mood: "✨",
+    liked: false,
+    created_at: new Date().toISOString(),
   },
   {
     id: "2",
-    user: { name: "Brian", uni: "KU", avatar: "https://images.unsplash.com/photo-1620829813573-7c9e1877706f?w=64&h=64&fit=crop&auto=format" },
+    user_id: "brian",
+    user_name: "Brian",
+    user_uni: "KU",
+    user_avatar: "https://images.unsplash.com/photo-1620829813573-7c9e1877706f?w=64&h=64&fit=crop&auto=format",
     media: ["https://images.unsplash.com/photo-1655720348590-c739c860beed?w=390&h=500&fit=crop&auto=format"],
-    type: "photo",
     caption: "Group project mode 💪🏾",
     mood: "🎯",
+    liked: false,
+    created_at: new Date().toISOString(),
   },
   {
     id: "3",
-    user: { name: "Zawadi", uni: "JKUAT", avatar: "https://images.unsplash.com/photo-1606416132922-22ab37c1231e?w=64&h=64&fit=crop&auto=format" },
+    user_id: "zawadi",
+    user_name: "Zawadi",
+    user_uni: "JKUAT",
+    user_avatar: "https://images.unsplash.com/photo-1606416132922-22ab37c1231e?w=64&h=64&fit=crop&auto=format",
     media: [
       "https://images.unsplash.com/photo-1755705152604-af6804fb8932?w=390&h=500&fit=crop&auto=format",
       "https://images.unsplash.com/photo-1619512673224-91cfb2688284?w=390&h=500&fit=crop&auto=format",
     ],
-    type: "gallery",
     caption: "Weekend with my crew 💃",
     mood: "🔥",
-  },
-  {
-    id: "4",
-    user: { name: "Kofi", uni: "Strathmore", avatar: "https://images.unsplash.com/photo-1694175271713-a6e2cc378980?w=64&h=64&fit=crop&auto=format" },
-    media: ["https://images.unsplash.com/photo-1685538362266-9f09f6b6cab5?w=390&h=500&fit=crop&auto=format"],
-    type: "photo",
-    caption: "",
-    mood: "📸",
+    liked: false,
+    created_at: new Date().toISOString(),
   },
 ];
 
 interface PostCardProps {
-  post: (typeof POSTS)[0];
-  onViewProfile: (userId: string) => void;
-  onBlockReport?: (name: string, userId: string) => void;
+  post: Post
+  onViewProfile: (userId: string) => void
+  onBlockReport?: (name: string, userId: string) => void
+  currentUserId?: string
 }
 
-function PostCard({ post, onViewProfile, onBlockReport }: PostCardProps) {
-  const [liked, setLiked] = useState(false);
-  const [showHeart, setShowHeart] = useState(false);
-  const [carouselIdx, setCarouselIdx] = useState(0);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const lastTapRef = useRef(0);
+function PostCard({ post, onViewProfile, onBlockReport, currentUserId }: PostCardProps) {
+  const [liked, setLiked] = useState(post.liked || false)
+  const [showHeart, setShowHeart] = useState(false)
+  const [carouselIdx, setCarouselIdx] = useState(0)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const lastTapRef = useRef(0)
 
   const doLike = () => {
-    setLiked(true);
-    setShowHeart(true);
-    setTimeout(() => setShowHeart(false), 900);
-  };
+    setLiked(true)
+    setShowHeart(true)
+    setTimeout(() => setShowHeart(false), 900)
+    if (currentUserId) likePost(post.id, currentUserId).catch(() => {})
+  }
+
+  const doUnlike = () => {
+    setLiked(false)
+    if (currentUserId) unlikePost(post.id, currentUserId).catch(() => {})
+  }
 
   const handleDoubleTap = () => {
-    const now = Date.now();
+    const now = Date.now()
     if (now - lastTapRef.current < 300) {
-      if (!liked) doLike();
+      if (!liked) doLike()
     }
-    lastTapRef.current = now;
-  };
+    lastTapRef.current = now
+  }
 
   const toggleLike = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!liked) doLike();
-    else setLiked(false);
-  };
+    e.stopPropagation()
+    if (!liked) doLike()
+    else doUnlike()
+  }
 
   return (
     <div
@@ -92,36 +106,54 @@ function PostCard({ post, onViewProfile, onBlockReport }: PostCardProps) {
     >
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-        <button onClick={() => onViewProfile(post.user.name)} className="flex-shrink-0 relative w-10 h-10">
-          <img src={post.user.avatar} alt={post.user.name} className="w-10 h-10 rounded-full object-cover relative z-10" />
+        <button
+          onClick={() => onViewProfile(post.user_id)}
+          className="flex-shrink-0 relative w-10 h-10"
+          aria-label={`View ${post.user_name}'s profile`}
+        >
+          <img
+            src={post.user_avatar}
+            alt={post.user_name}
+            className="w-10 h-10 rounded-full object-cover relative z-10"
+            loading="lazy"
+          />
           <div className="absolute -inset-0.5 rounded-full" style={{ background: "linear-gradient(135deg,#E86A8F,#8B1A2E)", padding: 1.5 }}>
             <div className="w-full h-full rounded-full bg-background" />
           </div>
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <button onClick={() => onViewProfile(post.user.name)}>
+            <button onClick={() => onViewProfile(post.user_id)}>
               <span className="font-bold text-foreground text-[15px]" style={{ fontFamily: "Nunito, sans-serif" }}>
-                {post.user.name}
+                {post.user_name}
               </span>
             </button>
-            <span
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide"
-              style={{ background: "linear-gradient(120deg,#8B1A2E,#C0395A)", color: "white" }}
-            >
-              <Shield size={9} strokeWidth={3} />
-              {post.user.uni}
-            </span>
+            {post.user_uni && (
+              <span
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide"
+                style={{ background: "linear-gradient(120deg,#8B1A2E,#C0395A)", color: "white" }}
+              >
+                <Shield size={9} strokeWidth={3} />
+                {post.user_uni}
+              </span>
+            )}
           </div>
         </div>
         <div className="relative">
-          <button onClick={() => setMenuOpen((v) => !v)} className="p-1.5 rounded-full hover:bg-secondary text-muted-foreground">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            className="p-1.5 rounded-full hover:bg-secondary text-muted-foreground"
+            aria-label="More options"
+          >
             <MoreVertical size={18} />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-9 bg-card rounded-2xl shadow-xl z-20 min-w-[130px] py-2 overflow-hidden" style={{ border: "1px solid rgba(139,26,46,0.1)" }}>
-              <button className="block w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-secondary" onClick={() => { setMenuOpen(false); onBlockReport?.(post.user.name, post.user.name) }}>Report 🚩</button>
-              <button className="block w-full text-left px-4 py-2.5 text-sm font-semibold text-destructive hover:bg-secondary" onClick={() => { setMenuOpen(false); onBlockReport?.(post.user.name, post.user.name) }}>Block 🚫</button>
+            <div
+              className="absolute right-0 top-9 bg-card rounded-2xl shadow-xl z-20 min-w-[130px] py-2 overflow-hidden"
+              style={{ border: "1px solid rgba(139,26,46,0.1)" }}
+            >
+              <button className="block w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-secondary" onClick={() => { setMenuOpen(false); onBlockReport?.(post.user_name || 'Unknown', post.user_id || '') }}>Report 🚩</button>
+              <button className="block w-full text-left px-4 py-2.5 text-sm font-semibold text-destructive hover:bg-secondary" onClick={() => { setMenuOpen(false); onBlockReport?.(post.user_name || 'Unknown', post.user_id || '') }}>Block 🚫</button>
             </div>
           )}
         </div>
@@ -132,12 +164,17 @@ function PostCard({ post, onViewProfile, onBlockReport }: PostCardProps) {
         className="relative overflow-hidden mx-2 rounded-2xl bg-gray-100"
         style={{ aspectRatio: "4/5" }}
         onClick={handleDoubleTap}
+        role="button"
+        tabIndex={0}
+        aria-label={`${post.user_name}'s post${post.caption ? ': ' + post.caption : ''}`}
+        onKeyDown={(e) => { if (e.key === 'Enter') handleDoubleTap() }}
       >
         <img
           src={post.media[carouselIdx]}
-          alt={post.caption || post.user.name}
+          alt={post.caption || post.user_name}
           className="w-full h-full object-cover select-none"
           draggable={false}
+          loading="lazy"
         />
         <div className="absolute bottom-0 inset-x-0 h-24 pointer-events-none" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.45), transparent)" }} />
 
@@ -146,7 +183,8 @@ function PostCard({ post, onViewProfile, onBlockReport }: PostCardProps) {
             {carouselIdx > 0 && (
               <button
                 className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-sm rounded-full p-1.5 text-white"
-                onClick={(e) => { e.stopPropagation(); setCarouselIdx((i) => i - 1); }}
+                onClick={(e) => { e.stopPropagation(); setCarouselIdx((i) => i - 1) }}
+                aria-label="Previous image"
               >
                 <ChevronLeft size={18} />
               </button>
@@ -154,7 +192,8 @@ function PostCard({ post, onViewProfile, onBlockReport }: PostCardProps) {
             {carouselIdx < post.media.length - 1 && (
               <button
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-sm rounded-full p-1.5 text-white"
-                onClick={(e) => { e.stopPropagation(); setCarouselIdx((i) => i + 1); }}
+                onClick={(e) => { e.stopPropagation(); setCarouselIdx((i) => i + 1) }}
+                aria-label="Next image"
               >
                 <ChevronRight size={18} />
               </button>
@@ -197,6 +236,7 @@ function PostCard({ post, onViewProfile, onBlockReport }: PostCardProps) {
             whileTap={{ scale: 1.35 }}
             transition={{ type: "spring", stiffness: 500, damping: 12 }}
             className="flex items-center gap-2"
+            aria-label={liked ? "Unlike" : "Like"}
           >
             <Heart
               size={26}
@@ -215,29 +255,95 @@ function PostCard({ post, onViewProfile, onBlockReport }: PostCardProps) {
               </motion.span>
             )}
           </motion.button>
-          <button onClick={() => onViewProfile(post.user.name)} className="text-xs font-semibold" style={{ color: "#8B1A2E" }}>
+          <button
+            onClick={() => onViewProfile(post.user_id)}
+            className="text-xs font-semibold"
+            style={{ color: "#8B1A2E" }}
+            aria-label={`View ${post.user_name}'s profile`}
+          >
             View profile →
           </button>
         </div>
         {post.caption && (
           <p className="text-sm text-foreground leading-snug">
-            <span className="font-bold" style={{ fontFamily: "Nunito, sans-serif" }}>{post.user.name}</span>{" "}
+            <span className="font-bold" style={{ fontFamily: "Nunito, sans-serif" }}>{post.user_name}</span>{" "}
             <span className="text-[#3a2a2e]">{post.caption}</span>
           </p>
         )}
       </div>
     </div>
-  );
+  )
 }
 
 interface DiscoverFeedProps {
-  onViewProfile: (userId: string) => void;
-  onSurprise: () => void;
-  onOpenStories?: (stories: any[], idx: number) => void;
-  onBlockReport?: (name: string, userId: string) => void;
+  onViewProfile: (userId: string) => void
+  onSurprise: () => void
+  onOpenStories?: (stories: any[], idx: number) => void
+  onBlockReport?: (name: string, userId: string) => void
 }
 
 export function DiscoverFeed({ onViewProfile, onSurprise, onOpenStories, onBlockReport }: DiscoverFeedProps) {
+  const { user } = useAuth()
+  const [posts, setPosts] = useState<Post[]>([])
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  const PAGE_SIZE = 10
+
+  // Initial fetch
+  useEffect(() => {
+    getPosts(PAGE_SIZE, 0)
+      .then((data) => {
+        if (data.length > 0) {
+          setPosts(data)
+          setHasMore(data.length >= PAGE_SIZE)
+        } else {
+          setPosts(MOCK_POSTS as Post[])
+          setHasMore(false)
+        }
+      })
+      .catch(() => {
+        setPosts(MOCK_POSTS as Post[])
+        setHasMore(false)
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    if (!hasMore || loadingMore) return
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          setLoadingMore(true)
+          const nextPage = page + 1
+          getPosts(PAGE_SIZE, nextPage * PAGE_SIZE)
+            .then((data) => {
+              if (data.length > 0) {
+                setPosts((prev) => [...prev, ...data])
+                setPage(nextPage)
+                setHasMore(data.length >= PAGE_SIZE)
+              } else {
+                setHasMore(false)
+              }
+            })
+            .catch(() => setHasMore(false))
+            .finally(() => setLoadingMore(false))
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasMore, loadingMore, page])
+
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Top bar */}
@@ -257,6 +363,7 @@ export function DiscoverFeed({ onViewProfile, onSurprise, onOpenStories, onBlock
             onClick={onSurprise}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-black text-white shadow-md"
             style={{ background: "linear-gradient(135deg,#8B1A2E,#C0395A)", boxShadow: "0 4px 16px rgba(139,26,46,0.35)" }}
+            aria-label="Start Surprise Meetup"
           >
             <Sparkles size={14} />
             Surprise
@@ -266,13 +373,18 @@ export function DiscoverFeed({ onViewProfile, onSurprise, onOpenStories, onBlock
         {/* Stories row */}
         <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {STORIES.map((s, i) => (
-            <button key={i} onClick={() => {
-              if (s.isMe) return // Open camera for your story
-              onOpenStories?.(
-                [{ id: s.name, user_id: s.name, user_full_name: s.name, user_avatar: s.avatar, media_url: s.avatar, type: 'photo', created_at: new Date().toISOString(), expires_at: '' }],
-                0
-              )
-            }} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+            <button
+              key={i}
+              onClick={() => {
+                if (s.isMe) return
+                onOpenStories?.(
+                  [{ id: s.name, user_id: s.name, user_full_name: s.name, user_avatar: s.avatar, media_url: s.avatar, type: 'photo', created_at: new Date().toISOString(), expires_at: '' }],
+                  0
+                )
+              }}
+              className="flex flex-col items-center gap-1.5 flex-shrink-0"
+              aria-label={s.isMe ? "Your story" : `${s.name}'s story`}
+            >
               <div className="relative w-14 h-14">
                 {s.isMe ? (
                   <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg,#8B1A2E,#C0395A)" }}>
@@ -286,7 +398,7 @@ export function DiscoverFeed({ onViewProfile, onSurprise, onOpenStories, onBlock
                     >
                       <div className="w-full h-full rounded-full" style={{ background: "#fdfcfb" }} />
                     </div>
-                    <img src={s.avatar} alt={s.name} className="absolute inset-0.5 w-[calc(100%-4px)] h-[calc(100%-4px)] rounded-full object-cover z-10" />
+                    <img src={s.avatar} alt={s.name} className="absolute inset-0.5 w-[calc(100%-4px)] h-[calc(100%-4px)] rounded-full object-cover z-10" loading="lazy" />
                     {s.active && (
                       <div className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-400 border-2 border-background z-20" />
                     )}
@@ -302,17 +414,55 @@ export function DiscoverFeed({ onViewProfile, onSurprise, onOpenStories, onBlock
       </div>
 
       <div className="px-3 pt-2">
-        {POSTS.map((post) => (
-          <PostCard key={post.id} post={post} onViewProfile={onViewProfile} onBlockReport={onBlockReport} />
-        ))}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <motion.div
+              animate={{ scale: [1, 1.15, 1] }}
+              transition={{ repeat: Infinity, duration: 1.2 }}
+              className="w-7 h-7 rounded-full"
+              style={{ background: 'linear-gradient(135deg,#8B1A2E,#C0395A)' }}
+            />
+          </div>
+        ) : (
+          <>
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                onViewProfile={onViewProfile}
+                onBlockReport={onBlockReport}
+                currentUserId={user?.id}
+              />
+            ))}
 
-        {/* End-of-feed nudge */}
-        <div className="flex flex-col items-center py-10 gap-2">
-          <span className="text-3xl">🔮</span>
-          <p className="text-sm font-bold text-muted-foreground" style={{ fontFamily: "Nunito, sans-serif" }}>You've seen everyone nearby</p>
-          <p className="text-xs text-muted-foreground">Check back soon — new faces every day</p>
-        </div>
+            {/* Infinite scroll sentinel */}
+            {hasMore && (
+              <div ref={sentinelRef} className="flex items-center justify-center py-6">
+                {loadingMore ? (
+                  <motion.div
+                    animate={{ scale: [1, 1.15, 1] }}
+                    transition={{ repeat: Infinity, duration: 1 }}
+                    className="w-5 h-5 rounded-full"
+                    style={{ background: 'linear-gradient(135deg,#8B1A2E,#C0395A)' }}
+                    aria-label="Loading more posts"
+                  />
+                ) : (
+                  <div className="h-4" />
+                )}
+              </div>
+            )}
+
+            {/* End-of-feed nudge */}
+            {!hasMore && posts.length > 0 && (
+              <div className="flex flex-col items-center py-10 gap-2">
+                <span className="text-3xl">🔮</span>
+                <p className="text-sm font-bold text-muted-foreground" style={{ fontFamily: "Nunito, sans-serif" }}>You've seen everyone nearby</p>
+                <p className="text-xs text-muted-foreground">Check back soon — new faces every day</p>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
-  );
+  )
 }

@@ -5,3 +5,5 @@ create table universities (
     badge_label text,
     created_at timestamptz default now()
 );
+
+alter table universities enable row level security;

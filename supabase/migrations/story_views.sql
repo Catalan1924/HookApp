@@ -5,3 +5,5 @@ create table story_views (
 
     primary key (story_id, viewer_id)
 );
+
+alter table story_views enable row level security;

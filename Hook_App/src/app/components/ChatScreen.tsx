@@ -171,7 +171,7 @@ export function ChatScreen({
           backdropFilter: 'blur(12px)',
         }}
       >
-        <button onClick={onBack} className="text-muted-foreground p-1">
+        <button onClick={onBack} className="text-muted-foreground p-1" aria-label="Go back">
           <ArrowLeft size={22} />
         </button>
         <button
@@ -179,7 +179,7 @@ export function ChatScreen({
           className="relative flex-shrink-0"
         >
           {partnerAvatar ? (
-            <img src={partnerAvatar} alt={partnerName} className="w-10 h-10 rounded-full object-cover" />
+            <img src={partnerAvatar} alt={partnerName} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
           ) : (
             <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ background: 'linear-gradient(135deg,#8B1A2E,#C0395A)' }}>
               {partnerName.charAt(0)}

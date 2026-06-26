@@ -6,3 +6,5 @@ create table stories (
     created_at timestamptz default now(),
     expires_at timestamptz default (now() + interval '24 hours')
 );
+
+alter table stories enable row level security;

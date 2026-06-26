@@ -1,23 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Home, Heart, MessageCircle, User, Plus, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { AuthScreen } from "./components/AuthScreen";
 import { OnboardingFlow } from "./components/OnboardingFlow";
 import { DiscoverFeed } from "./components/DiscoverFeed";
-import { SurpriseMeetup } from "./components/SurpriseMeetup";
-import { UserProfile } from "./components/UserProfile";
-import { DMsTab } from "./components/DMsTab";
 import { MatchesTab } from "./components/MatchesTab";
+import { DMsTab } from "./components/DMsTab";
 import { ProfileTab } from "./components/ProfileTab";
-import { PostScreen } from "./components/PostScreen";
-import { ChatScreen } from "./components/ChatScreen";
-import { StoryViewer } from "./components/StoryViewer";
-import { NotificationsPanel } from "./components/NotificationsPanel";
-import { BlockReportModal } from "./components/BlockReportModal";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ToastProvider, useToast } from "./components/Toast";
+import { LoadingSpinner } from "./components/LoadingSkeleton";
 import { getUnreadCount } from "../lib/api/notifications";
+import { supabase } from "../lib/supabase";
+
+// ── Lazy-loaded overlays ──
+const PostScreen = lazy(() => import("./components/PostScreen").then(m => ({ default: m.PostScreen })));
+const ChatScreen = lazy(() => import("./components/ChatScreen").then(m => ({ default: m.ChatScreen })));
+const SurpriseMeetup = lazy(() => import("./components/SurpriseMeetup").then(m => ({ default: m.SurpriseMeetup })));
+const UserProfile = lazy(() => import("./components/UserProfile").then(m => ({ default: m.UserProfile })));
+const StoryViewer = lazy(() => import("./components/StoryViewer").then(m => ({ default: m.StoryViewer })));
+const NotificationsPanel = lazy(() => import("./components/NotificationsPanel").then(m => ({ default: m.NotificationsPanel })));
+const BlockReportModal = lazy(() => import("./components/BlockReportModal").then(m => ({ default: m.BlockReportModal })));
 
 type Tab = "discover" | "matches" | "dms" | "profile";
 
@@ -72,14 +76,34 @@ function MainTabs() {
   const handleSaveProfile = (name: string) => setSavedProfiles((prev) => prev.includes(name) ? prev : [...prev, name]);
   const handleOpenStoryViewer = (stories: any[], idx: number) => setStoryViewer({ stories, index: idx });
 
-  const handleBlock = (userId: string) => {
-    showToast('User blocked successfully', 'success')
-    // Supabase block insert would go here
+  const handleBlock = async (userId: string) => {
+    if (!user) return
+    const { error } = await supabase
+      .from('blocks')
+      .insert({ blocker_id: user.id, blocked_id: userId } as any)
+    if (error) {
+      showToast('Could not block user. Try again.', 'error')
+    } else {
+      showToast('User blocked successfully', 'success')
+    }
   }
 
-  const handleReport = (userId: string, reason: string) => {
-    showToast('Report submitted. Thank you! 🙏', 'success')
-    // Supabase report insert would go here
+  const handleReport = async (userId: string, reason: string) => {
+    if (!user) return
+    const { error } = await supabase
+      .from('reports')
+      .insert({
+        reporter_id: user.id,
+        reported_user_id: userId,
+        context_type: 'profile',
+        reason,
+        status: 'pending',
+      } as any)
+    if (error) {
+      showToast('Could not submit report. Try again.', 'error')
+    } else {
+      showToast('Report submitted. Thank you! 🙏', 'success')
+    }
   }
 
   const showNav = !viewingProfile && !postOpen && !chatTarget && !surpriseOpen;
@@ -101,7 +125,9 @@ function MainTabs() {
               transition={{ type: "spring", stiffness: 380, damping: 36 }}
               className="flex-1 flex flex-col overflow-hidden"
             >
-              <PostScreen onClose={() => setPostOpen(false)} onPost={() => setPostOpen(false)} />
+              <Suspense fallback={<LoadingOverlay />}>
+                <PostScreen onClose={() => setPostOpen(false)} onPost={() => setPostOpen(false)} />
+              </Suspense>
             </motion.div>
           ) : chatTarget ? (
             <motion.div
@@ -112,13 +138,15 @@ function MainTabs() {
               transition={{ duration: 0.22, ease: "easeOut" }}
               className="flex-1 flex flex-col overflow-hidden"
             >
-              <ChatScreen
-                userId={chatTarget.userId}
-                partnerName={chatTarget.userName}
-                partnerAvatar={chatTarget.userAvatar}
-                onBack={() => setChatTarget(null)}
-                onViewProfile={handleViewProfile}
-              />
+              <Suspense fallback={<LoadingOverlay />}>
+                <ChatScreen
+                  userId={chatTarget.userId}
+                  partnerName={chatTarget.userName}
+                  partnerAvatar={chatTarget.userAvatar}
+                  onBack={() => setChatTarget(null)}
+                  onViewProfile={handleViewProfile}
+                />
+              </Suspense>
             </motion.div>
           ) : viewingProfile ? (
             <motion.div
@@ -129,13 +157,15 @@ function MainTabs() {
               transition={{ duration: 0.22, ease: "easeOut" }}
               className="flex-1 flex flex-col overflow-hidden"
             >
-              <UserProfile
-                userId={viewingProfile}
-                onBack={() => setViewingProfile(null)}
-                onSendMessage={handleSendMessage}
-                onOpenChat={handleOpenChat}
-                onBlockReport={(name, id) => setBlockReport({ name, id })}
-              />
+              <Suspense fallback={<LoadingOverlay />}>
+                <UserProfile
+                  userId={viewingProfile}
+                  onBack={() => setViewingProfile(null)}
+                  onSendMessage={handleSendMessage}
+                  onOpenChat={handleOpenChat}
+                  onBlockReport={(name, id) => setBlockReport({ name, id })}
+                />
+              </Suspense>
             </motion.div>
           ) : (
             <motion.div
@@ -171,7 +201,7 @@ function MainTabs() {
 
       {/* Bottom nav */}
       {showNav && (
-        <div
+        <nav
           className="flex-shrink-0 flex items-center border-t relative"
           style={{
             borderColor: "rgba(139,26,46,0.08)",
@@ -179,13 +209,22 @@ function MainTabs() {
             backdropFilter: "blur(12px)",
             paddingBottom: "env(safe-area-inset-bottom, 0px)",
           }}
+          role="tablist"
+          aria-label="Main navigation"
         >
           {/* Left tabs */}
           <div className="flex flex-1">
             {LEFT_TABS.map(({ id, label, Icon }) => {
               const active = tab === id;
               return (
-                <button key={id} onClick={() => setTab(id)} className="flex-1 flex flex-col items-center justify-center py-3 gap-0.5 relative">
+                <button
+                  key={id}
+                  onClick={() => setTab(id)}
+                  role="tab"
+                  aria-selected={active}
+                  aria-label={label}
+                  className="flex-1 flex flex-col items-center justify-center py-3 gap-0.5 relative"
+                >
                   {active && (
                     <motion.div
                       layoutId="tab-pill"
@@ -215,6 +254,7 @@ function MainTabs() {
                 background: "linear-gradient(135deg,#8B1A2E,#C0395A)",
                 boxShadow: "0 6px 24px rgba(139,26,46,0.45)",
               }}
+              aria-label="Create post"
             >
               <Plus size={26} color="white" strokeWidth={2.5} />
             </motion.button>
@@ -228,7 +268,14 @@ function MainTabs() {
             {RIGHT_TABS.map(({ id, label, Icon }) => {
               const active = tab === id;
               return (
-                <button key={id} onClick={() => setTab(id)} className="flex-1 flex flex-col items-center justify-center py-3 gap-0.5 relative">
+                <button
+                  key={id}
+                  onClick={() => setTab(id)}
+                  role="tab"
+                  aria-selected={active}
+                  aria-label={label}
+                  className="flex-1 flex flex-col items-center justify-center py-3 gap-0.5 relative"
+                >
                   {active && (
                     <motion.div
                       layoutId="tab-pill"
@@ -265,6 +312,7 @@ function MainTabs() {
               onClick={() => setNotifsOpen(true)}
               className="w-8 h-8 rounded-full flex items-center justify-center shadow-md relative"
               style={{ background: "white", border: "1.5px solid rgba(139,26,46,0.12)" }}
+              aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
             >
               <Bell size={14} style={{ color: "#8B1A2E" }} />
               {unreadCount > 0 && (
@@ -277,44 +325,60 @@ function MainTabs() {
               )}
             </motion.button>
           </div>
-        </div>
+        </nav>
       )}
 
       {/* Surprise overlay */}
       {surpriseOpen && (
-        <SurpriseMeetup onClose={() => setSurpriseOpen(false)} onSaveProfile={handleSaveProfile} />
+        <Suspense fallback={null}>
+          <SurpriseMeetup onClose={() => setSurpriseOpen(false)} onSaveProfile={handleSaveProfile} />
+        </Suspense>
       )}
 
       {/* Story viewer */}
       {storyViewer && (
-        <StoryViewer
-          stories={storyViewer.stories}
-          initialIndex={storyViewer.index}
-          onClose={() => setStoryViewer(null)}
-          onViewProfile={handleViewProfile}
-        />
+        <Suspense fallback={null}>
+          <StoryViewer
+            stories={storyViewer.stories}
+            initialIndex={storyViewer.index}
+            onClose={() => setStoryViewer(null)}
+            onViewProfile={handleViewProfile}
+          />
+        </Suspense>
       )}
 
       {/* Notifications panel */}
-      <NotificationsPanel
-        open={notifsOpen}
-        onClose={() => setNotifsOpen(false)}
-        onViewProfile={handleViewProfile}
-      />
+      <Suspense fallback={null}>
+        <NotificationsPanel
+          open={notifsOpen}
+          onClose={() => setNotifsOpen(false)}
+          onViewProfile={handleViewProfile}
+        />
+      </Suspense>
 
       {/* Block/Report modal */}
       {blockReport && (
-        <BlockReportModal
-          open={!!blockReport}
-          onClose={() => setBlockReport(null)}
-          targetName={blockReport.name}
-          targetId={blockReport.id}
-          onBlock={handleBlock}
-          onReport={handleReport}
-        />
+        <Suspense fallback={null}>
+          <BlockReportModal
+            open={!!blockReport}
+            onClose={() => setBlockReport(null)}
+            targetName={blockReport.name}
+            targetId={blockReport.id}
+            onBlock={handleBlock}
+            onReport={handleReport}
+          />
+        </Suspense>
       )}
     </div>
   );
+}
+
+function LoadingOverlay() {
+  return (
+    <div className="flex-1 flex items-center justify-center" style={{ background: '#fdfcfb' }}>
+      <LoadingSpinner text="Loading..." />
+    </div>
+  )
 }
 
 function AuthGate() {
@@ -328,6 +392,7 @@ function AuthGate() {
           animate={{ scale: [1, 1.2, 1] }}
           transition={{ repeat: Infinity, duration: 1.5 }}
           className="text-5xl"
+          aria-label="Loading"
         >
           💘
         </motion.div>

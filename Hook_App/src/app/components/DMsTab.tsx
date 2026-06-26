@@ -138,10 +138,11 @@ function ThreadRow({ thread, onClick }: { thread: ThreadWithPartner; onClick: ()
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-secondary active:bg-secondary transition-colors"
+      aria-label={`Chat with ${thread.partner_name}`}
     >
       <div className="relative flex-shrink-0">
         {thread.partner_avatar ? (
-          <img src={thread.partner_avatar} alt={thread.partner_name || ''} className="w-14 h-14 rounded-full object-cover" />
+          <img src={thread.partner_avatar} alt={thread.partner_name || ''} className="w-14 h-14 rounded-full object-cover" loading="lazy" />
         ) : (
           <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{ background: 'linear-gradient(135deg,#8B1A2E,#C0395A)' }}>
             {(thread.partner_name || '?').charAt(0)}

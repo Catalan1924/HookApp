@@ -1,5 +1,18 @@
 import { supabase } from '../supabase'
 
+export interface Post {
+  id: string
+  user_id: string
+  user_name?: string
+  user_uni?: string
+  user_avatar?: string
+  media: string[]
+  caption: string
+  mood: string
+  liked: boolean
+  created_at: string
+}
+
 export async function createPost(userId: string, caption: string, media: { url: string; type: string }[], audience = 'everyone'): Promise<any | null> {
   const { data, error } = await supabase
     .from('posts')
@@ -10,32 +23,46 @@ export async function createPost(userId: string, caption: string, media: { url: 
   return data
 }
 
-export async function getPosts(currentUserId: string, limit = 20, offset = 0): Promise<any[]> {
-  const { data: posts } = await supabase
+export async function getPosts(limit = 20, offset = 0, currentUserId?: string): Promise<Post[]> {
+  const { data: posts, error } = await supabase
     .from('posts')
     .select('*')
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
-  if (!posts || posts.length === 0) return []
+  if (error || !posts || posts.length === 0) return []
 
   const rows = posts as any[]
   const userIds = [...new Set(rows.map((p: any) => p.user_id))]
   const { data: profiles } = await supabase.from('profiles').select('id, full_name, avatar_url, university_id').in('id', userIds)
   const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]))
 
-  const postIds = rows.map((p: any) => p.id)
-  const { data: myLikes } = await supabase.from('posts_like').select('post_id').eq('user_id', currentUserId).in('post_id', postIds)
-  const likedSet = new Set((myLikes || []).map((l: any) => l.post_id))
+  // Likes only if we have a current user
+  let likedSet = new Set<string>()
+  if (currentUserId) {
+    const postIds = rows.map((p: any) => p.id)
+    const { data: myLikes } = await supabase
+      .from('posts_like')
+      .select('post_id')
+      .eq('user_id', currentUserId)
+      .in('post_id', postIds)
+    likedSet = new Set((myLikes || []).map((l: any) => l.post_id))
+  }
 
   return rows.map((p: any) => {
     const profile = profileMap.get(p.user_id)
+    const mediaArray = Array.isArray(p.media) ? p.media.map((m: any) => (typeof m === 'string' ? m : m.url)) : []
     return {
-      ...p,
-      user_full_name: profile?.full_name || 'Unknown',
+      id: p.id,
+      user_id: p.user_id,
+      user_name: profile?.full_name || 'Unknown',
       user_avatar: profile?.avatar_url || null,
       user_uni: profile?.university_id || null,
+      media: mediaArray,
+      caption: p.caption || '',
+      mood: p.mood || '',
       liked: likedSet.has(p.id),
+      created_at: p.created_at,
     }
   })
 }
