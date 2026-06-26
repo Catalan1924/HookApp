@@ -65,16 +65,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl text-white shadow-xl text-sm"
                 style={{ background: bgColor }}
               >
-                <IconEl size={16} className="flex-shrink-0" />
+                <IconEl size={16} className="shrink-0" />
                 <span className="flex-1 font-semibold">{toast.message}</span>
                 {toast.action && (
-                  <button onClick={toast.action.onClick} className="font-bold text-white/80 text-xs underline flex-shrink-0">
+                  <button onClick={toast.action.onClick} className="font-bold text-white/80 text-xs underline shrink-0">
                     {toast.action.label}
                   </button>
                 )}
                 <button
                   onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
-                  className="text-white/60 flex-shrink-0"
+                  className="text-white/60 shrink-0"
                 >
                   <X size={14} />
                 </button>

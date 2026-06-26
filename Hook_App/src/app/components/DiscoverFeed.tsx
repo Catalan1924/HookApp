@@ -108,7 +108,7 @@ function PostCard({ post, onViewProfile, onBlockReport, currentUserId }: PostCar
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         <button
           onClick={() => onViewProfile(post.user_id)}
-          className="flex-shrink-0 relative w-10 h-10"
+          className="shrink-0 relative w-10 h-10"
           aria-label={`View ${post.user_name}'s profile`}
         >
           <img
@@ -149,7 +149,7 @@ function PostCard({ post, onViewProfile, onBlockReport, currentUserId }: PostCar
           </button>
           {menuOpen && (
             <div
-              className="absolute right-0 top-9 bg-card rounded-2xl shadow-xl z-20 min-w-[130px] py-2 overflow-hidden"
+              className="absolute right-0 top-9 bg-card rounded-2xl shadow-xl z-20 min-w-32.5 py-2 overflow-hidden"
               style={{ border: "1px solid rgba(139,26,46,0.1)" }}
             >
               <button className="block w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-secondary" onClick={() => { setMenuOpen(false); onBlockReport?.(post.user_name || 'Unknown', post.user_id || '') }}>Report 🚩</button>
@@ -382,7 +382,7 @@ export function DiscoverFeed({ onViewProfile, onSurprise, onOpenStories, onBlock
                   0
                 )
               }}
-              className="flex flex-col items-center gap-1.5 flex-shrink-0"
+              className="flex flex-col items-center gap-1.5 shrink-0"
               aria-label={s.isMe ? "Your story" : `${s.name}'s story`}
             >
               <div className="relative w-14 h-14">

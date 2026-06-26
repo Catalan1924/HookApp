@@ -154,7 +154,7 @@ export function MatchesTab({ onOpenChat, onViewProfile }: MatchesTabProps) {
                 key={match.user_id}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onViewProfile(match.user_id)}
-                className="rounded-2xl overflow-hidden relative aspect-[3/4] bg-gray-100"
+                className="rounded-2xl overflow-hidden relative aspect-3/4 bg-gray-100"
               >
                 {match.avatar_url ? (
                   <img
@@ -194,7 +194,7 @@ export function MatchesTab({ onOpenChat, onViewProfile }: MatchesTabProps) {
 
       {/* Tips */}
       <div className="mx-4 rounded-2xl p-4 flex gap-3 items-start mb-8" style={{ background: '#faf0f2' }}>
-        <Heart size={18} fill="#E86A8F" color="#E86A8F" className="flex-shrink-0 mt-0.5" />
+        <Heart size={18} fill="#E86A8F" color="#E86A8F" className="shrink-0 mt-0.5" />
         <div>
           <p className="font-bold text-sm text-foreground mb-0.5" style={{ fontFamily: 'Nunito, sans-serif' }}>
             How matching works

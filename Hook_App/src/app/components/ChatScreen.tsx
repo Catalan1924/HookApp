@@ -164,7 +164,7 @@ export function ChatScreen({
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Chat header */}
       <div
-        className="flex items-center gap-3 px-4 py-3 border-b flex-shrink-0"
+        className="flex items-center gap-3 px-4 py-3 border-b shrink-0"
         style={{
           borderColor: 'rgba(139,26,46,0.08)',
           background: 'rgba(253,252,251,0.97)',
@@ -176,7 +176,7 @@ export function ChatScreen({
         </button>
         <button
           onClick={() => partnerId && onViewProfile?.(partnerId)}
-          className="relative flex-shrink-0"
+          className="relative shrink-0"
         >
           {partnerAvatar ? (
             <img src={partnerAvatar} alt={partnerName} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
@@ -271,7 +271,7 @@ export function ChatScreen({
 
       {/* Input */}
       <div
-        className="px-4 py-3 border-t flex-shrink-0"
+        className="px-4 py-3 border-t shrink-0"
         style={{
           borderColor: 'rgba(139,26,46,0.08)',
           background: 'rgba(253,252,251,0.97)',
@@ -308,7 +308,7 @@ export function ChatScreen({
               whileTap={{ scale: 0.88 }}
               onClick={handleSend}
               disabled={!draft.trim()}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0 disabled:opacity-50"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg,#8B1A2E,#C0395A)' }}
             >
               <Send size={15} />

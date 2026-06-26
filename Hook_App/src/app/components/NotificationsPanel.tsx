@@ -152,7 +152,7 @@ export function NotificationsPanel({ open, onClose, onViewProfile }: Notificatio
                     }}
                   >
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                       style={{ background: `${iconColor}15` }}
                     >
                       <IconEl size={17} style={{ color: iconColor }} />
@@ -167,7 +167,7 @@ export function NotificationsPanel({ open, onClose, onViewProfile }: Notificatio
                       </p>
                     </div>
                     {!n.read_at && (
-                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-2" style={{ background: 'linear-gradient(135deg,#8B1A2E,#C0395A)' }} />
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0 mt-2" style={{ background: 'linear-gradient(135deg,#8B1A2E,#C0395A)' }} />
                     )}
                   </motion.button>
                 )

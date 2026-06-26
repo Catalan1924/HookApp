@@ -232,7 +232,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="123456"
-                  className="w-full rounded-2xl px-4 py-3 text-sm outline-none text-foreground text-center tracking-widest text-lg"
+                  className="w-full rounded-2xl px-4 py-3 text-sm outline-none text-foreground text-center tracking-widest"
                   style={{ background: '#f4f0f1', fontFamily: 'Nunito Sans, sans-serif' }}
                   autoFocus
                   aria-label="6-digit verification code"

@@ -9,7 +9,7 @@ export function LoadingSkeleton({ type = 'card', count = 3 }: LoadingSkeletonPro
       <div className="flex flex-col gap-1 px-4 py-2">
         {Array.from({ length: count }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 py-3.5">
-            <div className="w-14 h-14 rounded-full bg-gray-200 animate-pulse flex-shrink-0" />
+            <div className="w-14 h-14 rounded-full bg-gray-200 animate-pulse shrink-0" />
             <div className="flex-1 space-y-2">
               <div className="h-4 rounded-full bg-gray-200 animate-pulse w-1/3" />
               <div className="h-3 rounded-full bg-gray-200 animate-pulse w-2/3" />
@@ -24,7 +24,7 @@ export function LoadingSkeleton({ type = 'card', count = 3 }: LoadingSkeletonPro
     return (
       <div className="flex gap-3 overflow-x-auto px-4 pb-1">
         {Array.from({ length: count }).map((_, i) => (
-          <div key={i} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+          <div key={i} className="flex flex-col items-center gap-1.5 shrink-0">
             <div className="w-14 h-14 rounded-full bg-gray-200 animate-pulse" />
             <div className="h-2.5 w-12 rounded-full bg-gray-200 animate-pulse" />
           </div>

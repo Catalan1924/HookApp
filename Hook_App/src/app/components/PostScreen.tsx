@@ -237,7 +237,7 @@ export function PostScreen({ onClose, onPost }: PostScreenProps) {
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Header */}
       <div
-        className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b"
+        className="shrink-0 flex items-center justify-between px-4 py-3 border-b"
         style={{ borderColor: "rgba(139,26,46,0.08)", background: "rgba(253,252,251,0.97)", backdropFilter: "blur(12px)" }}
       >
         <button
@@ -263,7 +263,7 @@ export function PostScreen({ onClose, onPost }: PostScreenProps) {
       {/* Step: Select */}
       {step === "select" && (
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-shrink-0 flex gap-0 mx-4 my-3 rounded-2xl overflow-hidden" style={{ background: "#f4f0f1" }}>
+          <div className="shrink-0 flex gap-0 mx-4 my-3 rounded-2xl overflow-hidden" style={{ background: "#f4f0f1" }}>
             {(["photo", "video", "gallery"] as PostType[]).map((t) => (
               <button
                 key={t}
@@ -280,7 +280,7 @@ export function PostScreen({ onClose, onPost }: PostScreenProps) {
           </div>
 
           {selected.length > 0 && (
-            <div className="flex-shrink-0 mx-4 mb-3 rounded-2xl overflow-hidden bg-gray-100 relative" style={{ height: 220 }}>
+            <div className="shrink-0 mx-4 mb-3 rounded-2xl overflow-hidden bg-gray-100 relative" style={{ height: 220 }}>
               <img
                 src={selected[0].src}
                 alt="Selected"
@@ -296,7 +296,7 @@ export function PostScreen({ onClose, onPost }: PostScreenProps) {
           )}
 
           {postType === "gallery" && (
-            <p className="flex-shrink-0 text-xs text-center text-muted-foreground mb-2 font-semibold">
+            <p className="shrink-0 text-xs text-center text-muted-foreground mb-2 font-semibold">
               Select up to 6 photos · {selected.length}/6 chosen
             </p>
           )}
@@ -339,12 +339,12 @@ export function PostScreen({ onClose, onPost }: PostScreenProps) {
       {step === "edit" && selected.length > 0 && (
         <div className="flex-1 flex flex-col overflow-hidden">
           {selected.length > 1 && (
-            <div className="flex-shrink-0 flex gap-2 px-4 pt-3 pb-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            <div className="shrink-0 flex gap-2 px-4 pt-3 pb-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {selected.map((item, i) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveIdx(i)}
-                  className="flex-shrink-0 relative rounded-xl overflow-hidden"
+                  className="shrink-0 relative rounded-xl overflow-hidden"
                   style={{ width: 56, height: 56, outline: i === activeIdx ? "2.5px solid #8B1A2E" : "2px solid transparent", outlineOffset: 1 }}
                 >
                   <img
@@ -364,7 +364,7 @@ export function PostScreen({ onClose, onPost }: PostScreenProps) {
           )}
 
           <div
-            className="flex-shrink-0 relative overflow-hidden mx-4 rounded-2xl bg-gray-100"
+            className="shrink-0 relative overflow-hidden mx-4 rounded-2xl bg-gray-100"
             style={{ height: selected.length > 1 ? 200 : 280 }}
           >
             <img
@@ -393,7 +393,7 @@ export function PostScreen({ onClose, onPost }: PostScreenProps) {
             )}
           </div>
 
-          <div className="flex-shrink-0 flex gap-1 px-4 py-2.5">
+          <div className="shrink-0 flex gap-1 px-4 py-2.5">
             {(["filters", "adjust", "crop", "text"] as EditorTab[]).map((t) => {
               const icons = { filters: Sparkles, adjust: Sliders, crop: Crop, text: Type };
               const Ic = icons[t];
@@ -424,7 +424,7 @@ export function PostScreen({ onClose, onPost }: PostScreenProps) {
                       key={preset.name}
                       whileTap={{ scale: 0.93 }}
                       onClick={() => applyFilterAction(currentItem, preset)}
-                      className="flex-shrink-0 flex flex-col items-center gap-2"
+                      className="shrink-0 flex flex-col items-center gap-2"
                     >
                       <div
                         className="w-20 h-20 rounded-2xl overflow-hidden relative"
@@ -532,9 +532,9 @@ export function PostScreen({ onClose, onPost }: PostScreenProps) {
       {/* Step: Caption */}
       {step === "caption" && (
         <div className="flex-1 flex flex-col overflow-y-auto">
-          <div className="flex-shrink-0 flex gap-2 px-4 pt-4 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+          <div className="shrink-0 flex gap-2 px-4 pt-4 pb-3 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
             {selected.map((item) => (
-              <div key={item.id} className="flex-shrink-0 rounded-2xl overflow-hidden relative" style={{ width: 80, height: 80 }}>
+              <div key={item.id} className="shrink-0 rounded-2xl overflow-hidden relative" style={{ width: 80, height: 80 }}>
                 <img
                   src={item.thumb}
                   alt=""

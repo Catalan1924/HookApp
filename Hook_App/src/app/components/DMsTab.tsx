@@ -140,7 +140,7 @@ function ThreadRow({ thread, onClick }: { thread: ThreadWithPartner; onClick: ()
       className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-secondary active:bg-secondary transition-colors"
       aria-label={`Chat with ${thread.partner_name}`}
     >
-      <div className="relative flex-shrink-0">
+      <div className="relative shrink-0">
         {thread.partner_avatar ? (
           <img src={thread.partner_avatar} alt={thread.partner_name || ''} className="w-14 h-14 rounded-full object-cover" loading="lazy" />
         ) : (
@@ -178,7 +178,7 @@ function ThreadRow({ thread, onClick }: { thread: ThreadWithPartner; onClick: ()
       </div>
       {thread.unread && (
         <span
-          className="w-3 h-3 rounded-full flex-shrink-0"
+          className="w-3 h-3 rounded-full shrink-0"
           style={{ background: 'linear-gradient(135deg,#8B1A2E,#C0395A)' }}
         />
       )}

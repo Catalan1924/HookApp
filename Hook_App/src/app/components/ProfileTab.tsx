@@ -185,7 +185,7 @@ export function ProfileTab({ savedFromSurprise = [], onViewProfile, onSendMessag
               key={rec.name}
               whileTap={{ scale: 0.95 }}
               onClick={() => onViewProfile(rec.name)}
-              className="flex-shrink-0 flex flex-col items-center gap-2 p-3 rounded-2xl w-24"
+              className="shrink-0 flex flex-col items-center gap-2 p-3 rounded-2xl w-24"
               style={{ background: "white", border: "1.5px solid rgba(139,26,46,0.1)" }}
             >
               <img src={rec.avatar} alt={rec.name} className="w-14 h-14 rounded-2xl object-cover" loading="lazy" />
