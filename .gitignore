@@ -12,3 +12,6 @@ supabase/.temp/
 
 # Supabase CLI project link (generated per machine)
 Hook_App/supabase/
+
+# TypeScript incremental build cache
+*.tsbuildinfo

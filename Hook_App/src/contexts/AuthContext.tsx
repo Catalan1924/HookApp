@@ -20,7 +20,7 @@ interface AuthState {
   session: Session | null
   profile: Profile | null
   loading: boolean
-  signUp: (email: string, password: string) => Promise<{ error?: string }>
+  signUp: (email: string, password: string) => Promise<{ error?: string; needsEmailConfirmation?: boolean }>
   signIn: (email: string, password: string) => Promise<{ error?: string }>
   signInWithPhone: (phone: string) => Promise<{ error?: string }>
   verifyPhoneOTP: (phone: string, token: string) => Promise<{ error?: string }>
@@ -67,26 +67,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password })
-    if (error) return { error: error.message }
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) {
+      // Handle case where error.message might be missing or empty
+      const msg = error.message || `Sign up failed (status: ${(error as any)?.status || 'unknown'})`
+      return { error: msg }
+    }
+    // Email confirmation is ON by default in Supabase — user won't have a session yet
+    if (!data?.session) {
+      return { needsEmailConfirmation: true }
+    }
     return {}
   }
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) return { error: error.message }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      const msg = error.message || `Sign in failed (status: ${(error as any)?.status || 'unknown'})`
+      return { error: msg }
+    }
+    if (!data?.session) {
+      return { error: 'Unable to create session. Please try again.' }
+    }
     return {}
   }
 
   const signInWithPhone = async (phone: string) => {
-    const { error } = await supabase.auth.signInWithOtp({ phone })
-    if (error) return { error: error.message }
+    const { data, error } = await supabase.auth.signInWithOtp({ phone })
+    if (error) {
+      const msg = error.message || `Failed to send code (status: ${(error as any)?.status || 'unknown'})`
+      return { error: msg }
+    }
     return {}
   }
 
   const verifyPhoneOTP = async (phone: string, token: string) => {
-    const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
-    if (error) return { error: error.message }
+    const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
+    if (error) {
+      const msg = error.message || `Verification failed (status: ${(error as any)?.status || 'unknown'})`
+      return { error: msg }
+    }
+    if (!data?.session) {
+      return { error: 'Verification failed. Please request a new code.' }
+    }
     return {}
   }
 

@@ -89,7 +89,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       .eq('id', user.id)
 
     if (updateError) {
-      setError(updateError.message)
+      setError(String(updateError.message || updateError))
       setLoading(false)
       return
     }
@@ -116,7 +116,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     const { data, error: otpErr } = await supabase.auth.signInWithOtp({ phone: trimmed })
     setLoading(false)
     if (otpErr) {
-      setError(otpErr.message)
+      setError(String(otpErr.message || otpErr))
     } else {
       setOtpSent(true)
     }

@@ -24,12 +24,14 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
   const [otpSent, setOtpSent] = useState(false)
 
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
 
   // ── Email submit ──
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setMessage('')
     setLoading(true)
 
     if (!email || !password) {
@@ -43,19 +45,33 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
       return
     }
 
-    const result = isSignUp ? await signUp(email, password) : await signIn(email, password)
-    setLoading(false)
+    if (isSignUp) {
+      const result = await signUp(email, password)
+      setLoading(false)
 
-    if (result.error) {
-      setError(result.error)
+      if (result.error) {
+        setError(String(result.error))
+      } else if (result.needsEmailConfirmation) {
+        setMessage(`We sent a confirmation link to ${email}. Check your inbox! 📧`)
+      } else {
+        onComplete()
+      }
     } else {
-      onComplete()
+      const result = await signIn(email, password)
+      setLoading(false)
+
+      if (result.error) {
+        setError(String(result.error))
+      } else {
+        onComplete()
+      }
     }
   }
 
   // ── Phone: send OTP ──
   const handleSendOTP = async () => {
     setError('')
+    setMessage('')
     const cleaned = phone.replace(/\s+/g, '')
     if (cleaned.length < 10) {
       setError('Enter a valid phone number with country code (e.g. +254...)')
@@ -65,7 +81,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
     const result = await signInWithPhone(cleaned)
     setLoading(false)
     if (result.error) {
-      setError(result.error)
+      setError(String(result.error))
     } else {
       setOtpSent(true)
     }
@@ -74,6 +90,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
   // ── Phone: verify OTP ──
   const handleVerifyOTP = async () => {
     setError('')
+    setMessage('')
     if (otp.length < 4) {
       setError('Enter the verification code')
       return
@@ -83,7 +100,7 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
     const result = await verifyPhoneOTP(cleaned, otp)
     setLoading(false)
     if (result.error) {
-      setError(result.error)
+      setError(String(result.error))
     } else {
       onComplete()
     }
@@ -187,6 +204,18 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
               </motion.p>
             )}
 
+            {message && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-sm font-semibold text-center px-2 py-3 rounded-2xl"
+                style={{ background: '#e8f5e9', color: '#2e7d32' }}
+                role="status"
+              >
+                {message}
+              </motion.p>
+            )}
+
             <motion.button
               whileTap={{ scale: 0.96 }}
               type="submit"
@@ -248,6 +277,18 @@ export function AuthScreen({ onComplete }: AuthScreenProps) {
                 role="alert"
               >
                 {error}
+              </motion.p>
+            )}
+
+            {message && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-sm font-semibold text-center px-2 py-3 rounded-2xl"
+                style={{ background: '#e8f5e9', color: '#2e7d32' }}
+                role="status"
+              >
+                {message}
               </motion.p>
             )}
 

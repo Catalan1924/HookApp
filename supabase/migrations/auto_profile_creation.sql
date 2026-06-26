@@ -14,14 +14,16 @@ begin
     insert into profiles (id, username, display_name, phone)
     values (
       new.id,
-      split_part(new.email, '@', 1),
-      split_part(new.email, '@', 1),
+      coalesce(new.raw_app_meta_data->>'name', split_part(new.email, '@', 1)),
+      coalesce(new.raw_app_meta_data->>'name', split_part(new.email, '@', 1)),
       new.phone
     );
   end if;
   return new;
 end;
 $$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_created on auth.users;
 
 create trigger on_auth_user_created
   after insert on auth.users

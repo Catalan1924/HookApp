@@ -27,10 +27,10 @@ export async function getSavedSurprises(userId: string): Promise<any[]> {
   const { data: saves } = await supabase.from('surprise_saves').select('saved_user_id').eq('user_id', userId)
   if (!saves || saves.length === 0) return []
   const ids = (saves as any[]).map((s) => s.saved_user_id)
-  const { data: profiles } = await supabase.from('profiles').select('id, full_name, avatar_url, university_id').in('id', ids)
+  const { data: profiles } = await supabase.from('profiles').select('id, display_name, avatar_url, university_id').in('id', ids)
   return (profiles || []).map((p: any) => ({
     id: p.id,
-    full_name: p.full_name,
+    full_name: p.display_name,
     avatar_url: p.avatar_url,
     university_name: p.university_id,
   }))
