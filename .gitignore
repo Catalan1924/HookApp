@@ -1,1 +1,17 @@
+# Environment
 .env
+
+# Python virtual environment
+.venv/
+
+# VS Code workspace settings
+.vscode/
+
+# Supabase CLI temp artifacts
+supabase/.temp/
+
+# Supabase CLI project link (generated per machine)
+Hook_App/supabase/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
